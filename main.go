@@ -15,7 +15,8 @@ func main() {
 
 	// Handle Index
 	router.GET("/", showIndexPage)
-
+	// Handle GET requests at /article/view/some_article_id
+	router.GET("/article/show/:article_id", getArticle)
 	// Start serving the application
 	err := router.Run()
 	if err != nil {
