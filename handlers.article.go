@@ -35,3 +35,19 @@ func getArticle(c *gin.Context) {
 		c.AbortWithStatus(http.StatusNotFound)
 	}
 }
+
+// Render one of HTML, JSON, CSV based on the 'Accept' header of the request
+// if the header doesn't specify this, HTML is rendered, provided that
+// the template name is present
+func render(c *gin.Context, data gin.H, templateName string) {
+	switch c.Request.Header.Get("Accept") {
+	case "application/json":
+		//Respond with JSON
+		c.JSON(http.StatusOK, data["payload"])
+	case "application/xml":
+		//Resond wiht XML
+		c.XML(http.StatusOK, data["payload"])
+	default:
+		c.HTML(http.StatusOK, templateName, data)
+	}
+}
