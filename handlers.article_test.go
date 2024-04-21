@@ -45,3 +45,63 @@ func TestArticleUnauthenticated(t *testing.T) {
 		return statusOK && pageOK
 	})
 }
+
+func TestArticleListJSON(t *testing.T) {
+	r := getRouter(false)
+
+	r.GET("/", showIndexPage)
+
+	req, _ := http.NewRequest("GET", "/", nil)
+	req.Header.Add("Accept", "application/json")
+
+	testHTTPResponse(t, r, req, func(w *httptest.ResponseRecorder) bool {
+		statusOK := w.Code == http.StatusOK
+
+		return statusOK
+	})
+}
+
+func TestArticleListXML(t *testing.T) {
+	r := getRouter(false)
+
+	r.GET("/", showIndexPage)
+
+	req, _ := http.NewRequest("GET", "/", nil)
+	req.Header.Add("Accept", "application/xml")
+
+	testHTTPResponse(t, r, req, func(w *httptest.ResponseRecorder) bool {
+		statusOK := w.Code == http.StatusOK
+
+		return statusOK
+	})
+}
+
+func TestArticleUnauthenticatedJSON(t *testing.T) {
+	r := getRouter(true)
+
+	r.GET("/article/view/:article_id", getArticle)
+
+	req, _ := http.NewRequest("GET", "/article/view/1", nil)
+	req.Header.Add("Accept", "application/json")
+
+	testHTTPResponse(t, r, req, func(w *httptest.ResponseRecorder) bool {
+		statusOK := w.Code == http.StatusOK
+
+		return statusOK
+	})
+}
+
+func TestArticleUnauthenticatedXML(t *testing.T) {
+	r := getRouter(false)
+
+	r.GET("/article/view/:article_id", getArticle)
+
+	req, _ := http.NewRequest("GET", "/article/view/1", nil)
+	req.Header.Add("Accept", "application/xml")
+
+	testHTTPResponse(t, r, req, func(w *httptest.ResponseRecorder) bool {
+		statusOK := w.Code == http.StatusOK
+
+		return statusOK
+	})
+}
