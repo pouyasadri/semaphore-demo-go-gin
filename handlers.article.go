@@ -10,10 +10,10 @@ import (
 func showIndexPage(c *gin.Context) {
 	articles := getAllArticles()
 
-	c.HTML(http.StatusOK, "index.html", gin.H{
+	render(c, gin.H{
 		"title":   "Home Page",
 		"payload": articles,
-	})
+	}, "index.html")
 }
 
 func getArticle(c *gin.Context) {
@@ -22,10 +22,10 @@ func getArticle(c *gin.Context) {
 		// Check if the article exists
 		if article, err := getArticleByID(articleID); err == nil {
 			// Call the HTML method of the context to render a template
-			c.HTML(http.StatusOK, "article.html", gin.H{
+			render(c, gin.H{
 				"title":   article.Title,
 				"payload": article,
-			})
+			}, "article.html")
 		} else {
 			// if the article is not found, abort with an error
 			c.AbortWithError(http.StatusNotFound, err)
