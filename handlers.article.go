@@ -7,9 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func showIndexPage(c *gin.Context) {
-	articles := getAllArticles()
-
+func getArticles(c *gin.Context) {
+	articles, err := getAllArticles()
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+	}
 	render(c, gin.H{
 		"title":   "Home Page",
 		"payload": articles,
@@ -18,7 +20,7 @@ func showIndexPage(c *gin.Context) {
 
 func getArticle(c *gin.Context) {
 	//Check if the article ID is valid
-	if articleID, err := strconv.Atoi(c.Param("article_id")); err == nil {
+	if articleID, err := strconv.Atoi(c.Param("id")); err == nil {
 		// Check if the article exists
 		if article, err := getArticleByID(articleID); err == nil {
 			// Call the HTML method of the context to render a template
@@ -33,6 +35,93 @@ func getArticle(c *gin.Context) {
 	} else {
 		// if an invalid article ID is specified in the URL, abort with an error
 		c.AbortWithStatus(http.StatusNotFound)
+	}
+}
+
+func addArticle(c *gin.Context) {
+	if c.Request.Header.Get("Accept") == "application/json" {
+		var newArticle Article
+		if err := c.BindJSON(&newArticle); err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		_, err := insertArticle(newArticle)
+		if err != nil {
+			c.AbortWithStatus(http.StatusInternalServerError)
+		} else {
+			c.JSON(http.StatusCreated, newArticle)
+		}
+	} else {
+		// Get the input from the user
+		title := c.PostForm("title")
+		content := c.PostForm("content")
+
+		// Validate input
+		if title == "" || content == "" {
+			c.AbortWithError(http.StatusBadRequest, nil)
+			return
+		}
+
+		// Insert data into the database
+		newArticle := Article{Title: title, Content: content}
+		_, err := insertArticle(newArticle)
+		if err != nil {
+			c.AbortWithStatus(http.StatusInternalServerError)
+		} else {
+			c.Redirect(http.StatusMovedPermanently, "/")
+		}
+	}
+}
+
+func updateArticle(c *gin.Context) {
+	if articleID, err := strconv.Atoi(c.Param("article_id")); err == nil {
+		if c.Request.Header.Get("Accept") == "application/json" {
+			var newArticle Article
+			if err := c.BindJSON(&newArticle); err != nil {
+				c.AbortWithStatus(http.StatusBadRequest)
+				return
+			}
+			if _, err := updateArticleByID(newArticle, articleID); err != nil {
+				c.AbortWithStatus(http.StatusInternalServerError)
+			} else {
+				c.JSON(http.StatusOK, newArticle)
+			}
+		} else {
+			title := c.PostForm("title")
+			content := c.PostForm("content")
+
+			// Validate input
+			if title == "" || content == "" {
+				c.AbortWithError(http.StatusBadRequest, nil)
+				return
+			}
+
+			// Update data in the database
+			newArticle := Article{ID: articleID, Title: title, Content: content}
+			if _, err := updateArticleByID(newArticle, articleID); err != nil {
+				c.AbortWithStatus(http.StatusInternalServerError)
+			} else {
+				c.Redirect(http.StatusMovedPermanently, "/")
+			}
+		}
+	}
+}
+
+func deleteArticle(c *gin.Context) {
+	if articleID, err := strconv.Atoi(c.Param("article_id")); err == nil {
+		if c.Request.Header.Get("Accept") == "application/json" {
+			if _, err := deleteArticleByID(articleID); err != nil {
+				c.AbortWithError(http.StatusInternalServerError, err)
+			} else {
+				c.JSON(http.StatusOK, gin.H{"message": "Article deleted"})
+			}
+		} else {
+			if _, err := deleteArticleByID(articleID); err != nil {
+				c.AbortWithError(http.StatusInternalServerError, err)
+			} else {
+				c.Redirect(http.StatusMovedPermanently, "/")
+			}
+		}
 	}
 }
 
