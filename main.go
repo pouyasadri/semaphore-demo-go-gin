@@ -8,17 +8,27 @@ func main() {
 
 	// Set the router as the default one provided by Gin
 	router = gin.Default()
-
-	// Process the templates at the start so that they don't have to be loaded
-	// from the disk again. This makes serving HTML pages very fast.
 	router.LoadHTMLGlob("templates/*")
+	err := DatabaseConnection()
+	if err != nil {
+		return
+	}
+	router.RedirectTrailingSlash = true
+	//redirect "/articles" to "/"
+	router.GET("/", func(c *gin.Context) {
+		c.Redirect(301, "/articles")
 
-	// Handle Index
-	router.GET("/", showIndexPage)
-	// Handle GET requests at /article/view/some_article_id
-	router.GET("/article/view/:article_id", getArticle)
+	})
+	articleRoutes := router.Group("/articles")
+	{
+		articleRoutes.GET("/", getArticles)
+		articleRoutes.GET("/:id", getArticle)
+		articleRoutes.POST("/", addArticle)
+		articleRoutes.PUT("/:id", updateArticle)
+		articleRoutes.DELETE("/:id", deleteArticle)
+	}
 	// Start serving the application
-	err := router.Run()
+	err = router.Run()
 	if err != nil {
 		return
 	}
