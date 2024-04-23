@@ -9,8 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var tmpArticleList []Article
-
 // This function is used for setup before executing the test functions
 
 func TestMain(m *testing.M) {
