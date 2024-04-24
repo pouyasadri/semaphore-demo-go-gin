@@ -18,6 +18,13 @@ func getArticles(c *gin.Context) {
 	}, "index.html")
 }
 
+func showCreateArticlePage(c *gin.Context) {
+	render(c, gin.H{
+		"title": "Create New Article",
+	}, "create-article.html")
+
+}
+
 func getArticle(c *gin.Context) {
 	//Check if the article ID is valid
 	if articleID, err := strconv.Atoi(c.Param("id")); err == nil {
