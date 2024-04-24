@@ -2,15 +2,20 @@
 {{ template "header.html" .}}
 
 <!--Loop over the payload variable, which is the list of articles-->
-{{range .payload }}
-<!--Create the link for the article based on its ID-->
-<a href="/articles/{{.ID}}">
-    <!--Display the title of the article -->
-    <h2>{{.Title}}</h2>
-</a>
-<!--Display the content of the article-->
-<p>{{.Content}}</p>
-{{end}}
+<div class="container m-5">
+    <div class="row">
+        {{range .payload }}
+        <!--Create the link for the article based on its ID-->
 
+        <div class="card col-3 m-2">
+            <div class="card-body">
+                <h5 class="card-title">{{.Title}}</h5>
+                <p class="card-text">{{.Content}}</p>
+                <a href="/articles/{{.ID}}" class="btn btn-primary">Read more</a>
+            </div>
+        </div>
+        {{end}}
+    </div>
+</div>
 <!--Embed the footer.html template at this location-->
 {{ template "footer.html" .}}
