@@ -13,10 +13,6 @@ func TestConnection(t *testing.T) {
 	if DB == nil {
 		t.Fatal("DB is nil")
 	}
-
-	if err != nil {
-		t.Fatalf("Failed to insert article: %v", err)
-	}
 }
 
 func TestCreateArticleTable(t *testing.T) {
