@@ -12,7 +12,6 @@ func main() {
 	// Load the templates defined in the templates folder
 	router.LoadHTMLGlob("templates/*")
 	router.RedirectTrailingSlash = true
-
 	// Initialize database connection
 	err := DatabaseConnection()
 	if err != nil {
@@ -22,7 +21,6 @@ func main() {
 	//redirect "/articles" to "/"
 	router.GET("/", func(c *gin.Context) {
 		c.Redirect(301, "/articles")
-
 	})
 
 	// Define the route for the index page and display the index.html template
@@ -31,6 +29,7 @@ func main() {
 		articleRoutes.GET("/", getArticles)
 		articleRoutes.GET("/:id", getArticle)
 		articleRoutes.GET("/new", showCreateArticlePage)
+		articleRoutes.GET("/edit/:id", showEditArticlePage)
 		articleRoutes.POST("/", addArticle)
 		articleRoutes.PUT("/:id", updateArticle)
 		articleRoutes.DELETE("/:id", deleteArticle)
