@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -54,7 +55,10 @@ func createArticleTable(db *sql.DB) error {
 		return err
 	}
 
-	statement.Exec()
+	_, err = statement.Exec()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -72,7 +76,12 @@ func insertArticle(newArticle Article) (bool, error) {
 		return false, err
 	}
 
-	defer stmt.Close()
+	defer func(stmt *sql.Stmt) {
+		err := stmt.Close()
+		if err != nil {
+
+		}
+	}(stmt)
 
 	_, err = stmt.Exec(newArticle.Title, newArticle.Content)
 
@@ -80,7 +89,10 @@ func insertArticle(newArticle Article) (bool, error) {
 		return false, err
 	}
 
-	tx.Commit()
+	err = tx.Commit()
+	if err != nil {
+		return false, err
+	}
 
 	return true, nil
 
@@ -89,11 +101,16 @@ func insertArticle(newArticle Article) (bool, error) {
 // getAllArticles is a function that gets all articles from the database
 func getAllArticles() ([]Article, error) {
 	// Get all articles from the database
-	rows, err := DB.Query("SELECT id, title, content FROM articles")
+	rows, err := DB.Query("SELECT id, title, content FROM articles order by id desc")
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			return
+		}
+	}(rows)
 
 	articles := make([]Article, 0)
 	for rows.Next() {
@@ -119,7 +136,7 @@ func getArticleByID(id int) (Article, error) {
 
 	sqlErr := sqlstmt.QueryRow(id).Scan(&a.ID, &a.Title, &a.Content)
 	if sqlErr != nil {
-		if sqlErr == sql.ErrNoRows {
+		if errors.Is(sqlErr, sql.ErrNoRows) {
 			return Article{}, nil
 		}
 		return Article{}, sqlErr
@@ -141,7 +158,12 @@ func updateArticleByID(article Article, id int) (bool, error) {
 		return false, err
 	}
 
-	defer stmt.Close()
+	defer func(stmt *sql.Stmt) {
+		err := stmt.Close()
+		if err != nil {
+			return
+		}
+	}(stmt)
 
 	_, err = stmt.Exec(article.Title, article.Content, id)
 
@@ -149,7 +171,10 @@ func updateArticleByID(article Article, id int) (bool, error) {
 		return false, err
 	}
 
-	tx.Commit()
+	err = tx.Commit()
+	if err != nil {
+		return false, err
+	}
 
 	return true, nil
 
@@ -169,7 +194,12 @@ func deleteArticleByID(id int) (bool, error) {
 		return false, err
 	}
 
-	defer stmt.Close()
+	defer func(stmt *sql.Stmt) {
+		err := stmt.Close()
+		if err != nil {
+			return
+		}
+	}(stmt)
 
 	_, err = stmt.Exec(id)
 
@@ -177,7 +207,10 @@ func deleteArticleByID(id int) (bool, error) {
 		return false, err
 	}
 
-	tx.Commit()
+	err = tx.Commit()
+	if err != nil {
+		return false, err
+	}
 
 	return true, nil
 }
